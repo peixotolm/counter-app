@@ -1,10 +1,11 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import CounterApp from './App';
+import ReactDOM from 'react-dom/client';
+import CounterApp from './App.tsx';
 
-ReactDOM.render(
+
+
+ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <CounterApp />
-  </React.StrictMode>,
-  document.getElementById('root')
+  </React.StrictMode>
 );
