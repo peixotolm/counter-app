@@ -1,0 +1,5 @@
+apm_config:
+  apm_non_local_traffic: true
+
+# Skips the certificate validation
+skip_ssl_validation: true

@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  dd-agent:
+    image: datadog/agent:latest
+    container_name: dd-agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+      - ./datadog.yaml:/etc/datadog-agent/datadog.yaml
+    environment:
+      DD_API_KEY: "${DD_API_KEY}"
+      DD_HOSTNAME: "js-metrics-poc"
+      DD_ENV: "js-metrics-poc"
+      DD_SITE: "datadoghq.com"
+      DD_APM_ENABLED: true
+      DD_LOGS_INJECTION: true
+    ports:
+      - "8126:8126"
+    networks:
+      - js-metrics-poc
+  
+  app:
+    container_name: app-dev
+    image: app-dev
+    build:
+      context: .
+      target: development
+    volumes:
+      - ./src:/app/src
+    ports:
+      - 3000:3000
+    networks:
+      - js-metrics-poc
+
+networks:
+  js-metrics-poc:
+    driver: bridge
+
+  
