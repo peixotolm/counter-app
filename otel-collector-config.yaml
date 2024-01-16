@@ -1,49 +1,77 @@
 receivers:
-
   otlp:
-
     protocols:
-
       http:
-
         cors:
-
           allowed_origins: ["*"]
 
           allowed_headers: ["*"]
 
-exporters:
+  # The hostmetrics receiver is required to get correct infrastructure metrics in Datadog.
+  hostmetrics:
+    collection_interval: 10s
+    scrapers:
+      paging:
+        metrics:
+          system.paging.utilization:
+            enabled: true
+      cpu:
+        metrics:
+          system.cpu.utilization:
+            enabled: true
+      disk:
+      filesystem:
+        metrics:
+          system.filesystem.utilization:
+            enabled: true
+      load:
+      memory:
+      network:
+      processes:
 
-  logging:
-
-    verbosity: Detailed
-
-  jaeger:
-
-    endpoint: jaeger-all-in-one:14250
-
-    tls:
-
-      insecure: true
+  filelog:
+    include_file_path: true
+    poll_interval: 500ms
+    include:
+      - /**/*.log
 
 processors:
-
   batch:
+    send_batch_max_size: 100
+    send_batch_size: 10
+    timeout: 10s
+
+exporters:
+  logging:
+    verbosity: Detailed
+
+  datadog:
+    api:
+      site: "datadoghq.com"
+      key: <API_KEY>
+    
+
+  ## Create an exporter to Jaeger using the standard `otlp` export format
+  otlp:
+    endpoint: 'jaeger:4317'
+    tls:
+      insecure: true
+
 
 service:
-
   telemetry:
-
     logs:
-
       level: "debug"
-
   pipelines:
-
-    traces:
-
-      receivers: [otlp]
-
-      exporters: [logging, jaeger]
-
+    metrics:
+      receivers: [hostmetrics, otlp]
       processors: [batch]
+      exporters: [datadog]
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [datadog, otlp]
+    logs:
+      receivers: [otlp, filelog]
+      processors: [batch]
+      exporters: [datadog]
